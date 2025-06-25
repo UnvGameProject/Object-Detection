@@ -12,6 +12,8 @@ from ultralytics import YOLO
 import cv2
 import time
 import tkinter
+import traceback
+import matplotlib.patches as patches
 from app.core.memory_buffer import SharedFrameBuffer
 
 def get_activations(model, input_tensor, layer_names=None):
@@ -42,6 +44,7 @@ def load_throttle_delay(default=5.0):
                 return float(f.read().strip())
     except Exception as e:
         print(f"⚠️ Failed to read throttle file: {e}")
+        traceback.print_exc()
     return default
 
 def visualize_activations(activations, max_channels=8, fig=None, delay=5.0):
@@ -52,7 +55,21 @@ def visualize_activations(activations, max_channels=8, fig=None, delay=5.0):
                 continue
 
             num_channels = min(batch_act.shape[0], max_channels)
-            fig.clf()
+
+            # Flash green overlay at start of update WITHOUT clearing figure immediately
+            ax_flash = fig.add_subplot(111)
+            rect = patches.Rectangle((0, 0), 1, 1, transform=ax_flash.transAxes,
+                                     linewidth=0, edgecolor=None,
+                                     facecolor='lime', alpha=0.5)
+            ax_flash.add_patch(rect)
+            fig.canvas.draw()
+            fig.canvas.flush_events()
+            time.sleep(0.15)  # brief flash pause
+            rect.remove()  # remove the flash overlay patch
+            fig.canvas.draw()
+            fig.canvas.flush_events()
+
+            fig.clf()  # Clear figure after flash is removed
 
             for i in range(num_channels):
                 ax = fig.add_subplot(1, num_channels, i + 1)
@@ -70,6 +87,7 @@ def visualize_activations(activations, max_channels=8, fig=None, delay=5.0):
             time.sleep(delay)
     except (tkinter.TclError, RuntimeError) as e:
         print(f"❌ Error in activations loop: {e}")
+        traceback.print_exc()
         plt.close('all')
         raise SystemExit()
 
@@ -98,3 +116,6 @@ if __name__ == "__main__":
         main_loop()
     except KeyboardInterrupt:
         print("🛑 Activations viewer closed.")
+    except Exception as e:
+        print(f"❌ Fatal error in activations viewer: {e}")
+        traceback.print_exc()

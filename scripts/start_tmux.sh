@@ -63,4 +63,5 @@ python3 scripts/loss_landscape.py 2>&1 | tee logs/loss.log
 " C-m
 
 tmux select-layout -t $SESSION tiled
+tmux select-window -t $SESSION:0
 tmux attach -t $SESSION

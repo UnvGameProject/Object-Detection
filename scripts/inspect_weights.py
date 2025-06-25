@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 import tkinter
+import traceback
 from ultralytics import YOLO
 import os
 
@@ -17,6 +18,7 @@ def load_throttle_delay(default=5.0):
                 return float(f.read().strip())
     except Exception as e:
         print(f"⚠️ Failed to read throttle file: {e}")
+        traceback.print_exc()
     return default
 
 def inspect_weights():
@@ -61,11 +63,15 @@ def inspect_weights():
 
                 except (tkinter.TclError, RuntimeError) as e:
                     print(f"❌ Error in weights viewer loop: {e}")
+                    traceback.print_exc()
                     plt.close('all')
                     return
 
     except KeyboardInterrupt:
         print("🛑 Weights viewer closed.")
+    except Exception as e:
+        print(f"❌ Fatal error in weights viewer: {e}")
+        traceback.print_exc()
 
 if __name__ == "__main__":
     inspect_weights()
