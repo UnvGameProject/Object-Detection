@@ -1,0 +1,14 @@
+/venv
+yolov8n.pt
+/.git
+# .gitignore
+__pycache__/
+*.pyc
+*.pt
+*.onnx
+*.h5
+*.pth
+*.ckpt
+venv/
+data/
+outputs/
